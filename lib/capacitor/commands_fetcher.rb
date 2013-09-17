@@ -65,6 +65,7 @@ module Capacitor
     # :retry_hash -> :failed_hash_keys -> flush()
     # then start over with :incoming_hash
     def retrieve_batch
+      block_on_incoming_signal_list
       flush_retried_batch
       return retrieve_existing_batch || retrieve_current_batch
     end
