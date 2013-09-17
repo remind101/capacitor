@@ -54,7 +54,6 @@ module Capacitor
           model, id, field = parse_counter_id counter_id
           model.update_counters id, field => count
         rescue Exception => e
-          puts "--#{counter_id} exception: #{e}--"
           logger.error "#{counter_id} exception: #{e}"
         end
       end
