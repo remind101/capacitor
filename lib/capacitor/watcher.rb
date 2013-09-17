@@ -1,17 +1,16 @@
 require "active_support/core_ext/string/inflections"
+require 'formatted-metrics'
 
 module Capacitor
   class Watcher
 
     def loop_once
-      block_on_incoming_signal_list
-
+      counts = commands_fetcher.retrieve_batch
       start_time = Time.new
-      counts = CommandsFetcher.fetch
       process_batch counts
-      flush_batch
+      commands_fetcher.flush_batch
 
-      instrument "capacitor.loop.time", Time.new - start_time, units:seconds
+      instrument "capacitor.loop.time", Time.new - start_time, units:'seconds'
       instrument "capacitor.loop.object_counters", counts.length
     end
 
@@ -20,6 +19,10 @@ module Capacitor
       loop do
         loop_once
       end
+    end
+
+    def commands_fetcher
+      @commands_fetcher ||= CommandsFetcher.new
     end
 
     def self.run
