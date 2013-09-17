@@ -26,4 +26,13 @@ describe Capacitor::Watcher do
       watcher.process_batch({'MissingClassname:123:users_count' => 1})
     end
   end
+
+  describe '#loop_once' do
+    it 'updates counters' do
+      Post.should_receive(:update_counters).with(123, {:users_count=>1})
+      redis.hincrby "incoming_hash", "Post:123:users_count", 1
+      redis.lpush "incoming_signal_list", "abc"
+      watcher.loop_once
+    end
+  end
 end
