@@ -4,3 +4,7 @@ rvm:
   - 2.0.0
 script: bundle exec rake
 
+notifications:
+  email: false
+  hipchat:
+   - secure: "D/ppHWW3ZnaTSq/mtlZx+Vg96QksJN0igrpJVw808ERLX1WUyF44Vwo4ED8D\nbpppQBjhoUqbDM0mgD3Hb6b3mo//n84WXqzV5pfRnLLQM/9y7dzQcYers++9\ncwQwJw7WBu7J/m2yTV7qL4O6yPNB9YlYqIbum1jNbM5oKjksfTw="
