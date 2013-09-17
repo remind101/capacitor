@@ -5,8 +5,9 @@ module Capacitor
   class Watcher
 
     def loop_once
-      counts = commands_fetcher.retrieve_batch
+      commands_fetcher.block_on_incoming_signal_list
       start_time = Time.new
+      counts = commands_fetcher.retrieve_batch
       process_batch counts
       commands_fetcher.flush_batch
 
