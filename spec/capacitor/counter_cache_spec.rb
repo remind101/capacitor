@@ -1,8 +1,5 @@
 require 'spec_helper'
 
-class Post
-end
-
 describe Capacitor::CounterCache do
   let (:klass) { Post }
   let (:id) { 123 }
