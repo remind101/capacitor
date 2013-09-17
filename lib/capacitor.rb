@@ -21,5 +21,10 @@ module Capacitor
     def redis
       @redis ||= Redis.current
     end
+
+    def run
+      Watcher.run
+    end
+
   end
 end
