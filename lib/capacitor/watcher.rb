@@ -18,6 +18,11 @@ module Capacitor
     def loop_forever
       logger.info "Capacitor listening..."
       loop do
+        if shut_down?
+          logger.info 'Shutting down'
+          exit(0) 
+        end
+
         loop_once
       end
     end
@@ -27,7 +32,15 @@ module Capacitor
     end
 
     def self.run
-      new.loop_forever
+      watcher = new
+
+      %w(INT TERM).each do |signal|
+        trap signal do
+          watcher.handle_signal(signal)
+        end
+      end
+
+      watcher.loop_forever
     end
 
     def logger
@@ -63,7 +76,24 @@ module Capacitor
       end
     end
 
+    def handle_signal(signal)
+      puts "Received #{signal}"
+      case signal
+      when 'INT', 'TERM'
+        shut_down!
+      end
+    end
+
     private
+
+    def shut_down!
+      @shut_down = true
+      puts @shut_down
+    end
+
+    def shut_down?
+      @shut_down
+    end
 
     def delay_warning_threshold
       0.003
