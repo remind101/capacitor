@@ -19,7 +19,7 @@ module Capacitor
     end
 
     def redis
-      @redis ||= Redis.current
+      @redis ||= Redis::Namespace.new :capacitor, redis: Redis.current
     end
 
     def run
