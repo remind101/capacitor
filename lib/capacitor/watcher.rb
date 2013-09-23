@@ -6,23 +6,25 @@ module Capacitor
 
     def loop_once
       commands_fetcher.block_on_incoming_signal_list
-      start_time = Time.new
-      counts = commands_fetcher.retrieve_batch
-      process_batch counts
-      commands_fetcher.flush_batch
 
-      instrument "capacitor.loop.time", Time.new - start_time, units:'seconds'
-      instrument "capacitor.loop.object_counters", counts.length
+      begin
+        @working = true
+        start_time = Time.new
+        counts = commands_fetcher.retrieve_batch
+        process_batch counts
+        commands_fetcher.flush_batch
+
+        instrument "capacitor.loop.time", Time.new - start_time, units:'seconds'
+        instrument "capacitor.loop.object_counters", counts.length
+      ensure
+        @working = false
+      end
     end
 
     def loop_forever
       logger.info "Capacitor listening..."
       loop do
-        if shut_down?
-          logger.info 'Shutting down'
-          exit(0) 
-        end
-
+        shut_down! if shut_down?
         loop_once
       end
     end
@@ -77,18 +79,24 @@ module Capacitor
     end
 
     def handle_signal(signal)
-      puts "Received #{signal}"
       case signal
       when 'INT', 'TERM'
-        shut_down!
+        working? ? shut_down : shut_down!
       end
     end
 
     private
 
-    def shut_down!
+    def working?
+      @working
+    end
+
+    def shut_down
       @shut_down = true
-      puts @shut_down
+    end
+
+    def shut_down!
+      exit(0)
     end
 
     def shut_down?
