@@ -19,18 +19,22 @@ module Capacitor
       logger.info "Capacitor listening..."
 
       loop do
-        loop_once
-        pause if pause_time
+        with_pause { loop_once }
       end
     end
 
-    def pause
-      logger.debug "Capacitor pausing for #{pause_time}s"
-      sleep pause_time
+    def with_pause
+      yield
+
+      if time = pause_time
+        logger.debug "Capacitor pausing for #{time}s"
+        sleep time
+      end
     end
 
     def pause_time
-      ENV['CAPACITOR_SLEEP'] ? ENV['CAPACITOR_SLEEP'].to_f : nil
+      time = redis.get "pause_time"
+      time ? time.to_f : nil
     end
 
     def commands_fetcher
@@ -87,7 +91,5 @@ module Capacitor
     def instrument(*args, &block)
       Metrics.instrument *args, &block
     end
-
-
   end
 end
