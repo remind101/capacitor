@@ -11,11 +11,14 @@ module Capacitor
         @working = true
         start_time = Time.new
         counts = commands_fetcher.retrieve_batch
+        with_pause
         process_batch counts
         commands_fetcher.flush_batch
 
         instrument "capacitor.loop.time", Time.new - start_time, units:'seconds'
         instrument "capacitor.loop.object_counters", counts.length
+
+        shut_down! if shut_down?
       ensure
         @working = false
       end
@@ -25,17 +28,16 @@ module Capacitor
       logger.info "Capacitor listening..."
 
       loop do
-        with_pause { loop_once }
+        loop_once
       end
     end
 
     def with_pause
-      yield
+      yield if block_given?
 
       if time = pause_time
         logger.debug "Capacitor pausing for #{time}s"
         sleep time
-        shut_down! if shut_down?
       end
     end
 
