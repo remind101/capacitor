@@ -6,18 +6,25 @@ module Capacitor
 
     def loop_once
       commands_fetcher.block_on_incoming_signal_list
-      start_time = Time.new
-      counts = commands_fetcher.retrieve_batch
-      process_batch counts
-      commands_fetcher.flush_batch
 
-      instrument "capacitor.loop.time", Time.new - start_time, units:'seconds'
-      instrument "capacitor.loop.object_counters", counts.length
+      begin
+        @working = true
+        start_time = Time.new
+        counts = commands_fetcher.retrieve_batch
+        process_batch counts
+        commands_fetcher.flush_batch
+
+        instrument "capacitor.loop.time", Time.new - start_time, units:'seconds'
+        instrument "capacitor.loop.object_counters", counts.length
+      ensure
+        @working = false
+      end
     end
 
     def loop_forever
       logger.info "Capacitor listening..."
       loop do
+        shut_down! if shut_down?
         loop_once
       end
     end
@@ -27,7 +34,15 @@ module Capacitor
     end
 
     def self.run
-      new.loop_forever
+      watcher = new
+
+      %w(INT TERM).each do |signal|
+        trap signal do
+          watcher.handle_signal(signal)
+        end
+      end
+
+      watcher.loop_forever
     end
 
     def logger
@@ -63,7 +78,30 @@ module Capacitor
       end
     end
 
+    def handle_signal(signal)
+      case signal
+      when 'INT', 'TERM'
+        working? ? shut_down : shut_down!
+      end
+    end
+
     private
+
+    def working?
+      @working
+    end
+
+    def shut_down
+      @shut_down = true
+    end
+
+    def shut_down!
+      exit(0)
+    end
+
+    def shut_down?
+      @shut_down
+    end
 
     def delay_warning_threshold
       0.003
