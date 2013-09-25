@@ -15,9 +15,9 @@ module Capacitor
     end
 
     def log_level=(level)
-      if level != nil && level != @level
+      unless level.nil? || level == @level
         begin
-          logger.level = Logger.const_get level
+          logger.level = Logger.const_get level.upcase
           @level = level
         rescue Exception => e
           logger.error "Unable to set log level to #{level} - #{e}"
