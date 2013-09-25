@@ -10,6 +10,7 @@ module Capacitor
       begin
         @working = true
         start_time = Time.new
+        Capacitor.log_level= log_level
         counts = commands_fetcher.retrieve_batch
         with_pause
         process_batch counts
@@ -26,6 +27,7 @@ module Capacitor
 
     def loop_forever
       logger.info "Capacitor listening..."
+      redis.set "capacitor_start", Time.new.to_s
 
       loop do
         loop_once
@@ -44,6 +46,10 @@ module Capacitor
     def pause_time
       time = redis.get "pause_time"
       time ? time.to_f : nil
+    end
+
+    def log_level
+      redis.get "log_level"
     end
 
     def commands_fetcher
@@ -89,6 +95,7 @@ module Capacitor
         begin
           model, id, field = parse_counter_id counter_id
           model.update_counters id, field => count
+          logger.debug "update_counter #{counter_id} #{count}"
         rescue Exception => e
           logger.error "#{counter_id} exception: #{e}"
         end
