@@ -34,14 +34,17 @@ module Capacitor
     end
 
     def logger
-      Rails.logger
+      Capacitor.logger
     end
 
     def enqueue_count_change(delta)
-      redis.pipelined do
+      responses = redis.pipelined do
         redis.hincrby "incoming_hash", counter_id, delta
         redis.lpush "incoming_signal_list", counter_id
+        redis.get "log_level"
       end
+      Capacitor.log_level= responses.last
+      logger.debug "enqueue_count_change #{counter_id} #{delta}"
     end
 
     def counter_id
