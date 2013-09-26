@@ -7,6 +7,7 @@ module Capacitor
   autoload :CounterCache, 'capacitor/counter_cache'
   autoload :CommandsFetcher, 'capacitor/commands_fetcher'
   autoload :Watcher, 'capacitor/watcher'
+  autoload :Updater, 'capacitor/updater'
 
   class << self
     attr_writer :logger

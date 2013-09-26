@@ -14,6 +14,14 @@ end
 Capacitor.logger = Logger.new nil
 
 class Post
-  def self.update_counters(*args)
+  def self.update_counters(*)
+  end
+
+  def self.find(*)
+    new
+  end
+
+  def [](*)
+    1
   end
 end
