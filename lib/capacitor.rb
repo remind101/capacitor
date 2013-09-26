@@ -35,6 +35,7 @@ module Capacitor
     end
 
     def run
+      STDOUT.sync = true
       Watcher.run
     end
   end
