@@ -1,6 +1,7 @@
 require 'redis'
 require 'redis-namespace'
 require 'logger'
+require 'capacitor/railtie' if defined?(::Rails)
 
 module Capacitor
   autoload :CounterCache, 'capacitor/counter_cache'
@@ -35,6 +36,5 @@ module Capacitor
     def run
       Watcher.run
     end
-
   end
 end
