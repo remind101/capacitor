@@ -72,38 +72,24 @@ module Capacitor
       Capacitor.logger
     end
 
-    # Internal: Expect a counter_id in the form: classname:object_id:field_name
-    #
-    # Returns: model, object_id, :field
-    def parse_counter_id(counter_id)
-      classname, object_id, field_name = counter_id.split(':')
-      [classname.constantize, object_id.to_i, field_name.to_sym]
-    end
-
     # Public: update_counters on models
     #
     # counts - {'classname:id:field_name' => increment, ...}
     #
     # Returns: nothing
     def process_batch(counts)
-
-      counts.each do |counter_id, count|
-        # count can be 0 if the adds and removes balance out.
-        count = count.to_i
-        next if count == 0
-
-        begin
-          model, id, field = parse_counter_id counter_id
-          model.update_counters id, field => count
-          if logger.debug?
-            instance = model.find id
-            old_count = instance.send(field.to_sym)
-            logger.debug "update_counter #{counter_id} #{count} #{old_count}"
-          end
-        rescue Exception => e
-          logger.error "#{counter_id} exception: #{e}"
-        end
+      counts.each do |counter_id, count_delta|
+        process(counter_id, count_delta)
       end
+    end
+
+    # Public: Updates a counter on one model
+    def process(counter_id, count_delta)
+      updater = Updater.new(counter_id, count_delta)
+      logger.debug updater.inspect if logger.debug?
+      updater.update
+    rescue Exception => e
+      logger.error "#{counter_id} exception: #{e}"
     end
 
     def handle_signal(signal)
