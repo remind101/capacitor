@@ -95,7 +95,11 @@ module Capacitor
         begin
           model, id, field = parse_counter_id counter_id
           model.update_counters id, field => count
-          logger.debug "update_counter #{counter_id} #{count}"
+          if logger.level == Logger::DEBUG
+            instance = model.find id
+            old_count = instance.send(field.to_sym)
+            logger.debug "update_counter #{counter_id} #{count} #{old_count}"
+          end
         rescue Exception => e
           logger.error "#{counter_id} exception: #{e}"
         end
