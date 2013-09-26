@@ -12,13 +12,13 @@ module Capacitor
     #
     # If count_delta is zero, does nothing
     def update
-      return if @count_delta.zero?
-      @model.update_counters(@id, @field => @count_delta)
+      return if count_delta.zero?
+      model.update_counters(id, field => count_delta)
     end
 
     # Public: Returns the counter value from the database
     def old_count
-      @model.find(@id)[@field]
+      model.find(id)[field]
     end
 
     # Public: Returns a string of useful debug info
