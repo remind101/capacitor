@@ -4,34 +4,35 @@ require 'formatted-metrics'
 module Capacitor
   class Watcher
 
-    def loop_once
-      commands_fetcher.block_on_incoming_signal_list
-
-      begin
-        @working = true
-        start_time = Time.new
-        Capacitor.log_level= log_level
-        counts = commands_fetcher.retrieve_batch
-        with_pause
-        process_batch counts
-        commands_fetcher.flush_batch
-
-        instrument "capacitor.loop.time", Time.new - start_time, units:'seconds'
-        instrument "capacitor.loop.object_counters", counts.length
-
-        shut_down! if shut_down?
-      ensure
-        @working = false
-      end
-    end
-
     def loop_forever
       logger.info "Capacitor listening..."
       redis.set "capacitor_start", Time.new.to_s
 
       loop do
+        wait_for_batch
         loop_once
       end
+    end
+
+    def wait_for_batch
+      commands_fetcher.block_on_incoming_signal_list
+    end
+
+    def loop_once
+      @working = true
+      start_time = Time.new
+      Capacitor.log_level= log_level
+      counts = commands_fetcher.retrieve_batch
+      with_pause
+      process_batch counts
+      commands_fetcher.flush_batch
+
+      instrument "capacitor.loop.time", Time.new - start_time, units:'seconds'
+      instrument "capacitor.loop.object_counters", counts.length
+
+      shut_down! if shut_down?
+    ensure
+      @working = false
     end
 
     def with_pause
